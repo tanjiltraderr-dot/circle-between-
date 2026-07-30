@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Notifications
@@ -260,20 +261,6 @@ fun HeroBanner() {
                         fontSize = 28.sp
                     )
                     Spacer(modifier = Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "UP TO ",
-                            color = Color.White,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 22.sp
-                        )
-                        Text(
-                            text = "70% OFF",
-                            color = Color(0xFFFFEB3B),
-                            fontWeight = FontWeight.Black,
-                            fontSize = 22.sp
-                        )
-                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
@@ -333,9 +320,24 @@ fun CircleDealsSection(onNavigateToProduct: (String) -> Unit, onNavigateToCircle
     Column(modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 12.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.FlashOn,
+                    contentDescription = null,
+                    tint = Color(0xFFFFC107),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Circle Deals",
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { onNavigateToCircleDeals(null) }
@@ -397,7 +399,8 @@ fun TimeBox(number: String, label: String) {
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
             .background(Color(0xFFFFD54F))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .width(42.dp)
+            .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = number, color = Color.Black, fontWeight = FontWeight.Black, fontSize = 16.sp, lineHeight = 16.sp)
@@ -597,6 +600,8 @@ fun ProductCard(
     leftText: String? = null,
     ratingCount: Int = 120
 ) {
+    var isFavorite by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
     Card(
         modifier = modifier
             .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
@@ -611,24 +616,29 @@ fun ProductCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
+                    .background(Color.White)
             ) {
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = title,
-                    modifier = Modifier.fillMaxSize().padding(12.dp),
-                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
                     alignment = Alignment.Center
                 )
                 
                 // Favorite Icon
-                Icon(
-                    Icons.Outlined.FavoriteBorder, 
-                    contentDescription = "Wishlist", 
-                    tint = Color.Gray, 
-                    modifier = Modifier.align(Alignment.TopEnd).padding(12.dp).size(20.dp)
-                )
+                IconButton(
+                    onClick = { isFavorite = !isFavorite },
+                    modifier = Modifier.align(Alignment.TopEnd).padding(4.dp).size(32.dp)
+                ) {
+                    Icon(
+                        if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Wishlist", 
+                        tint = if (isFavorite) Color.Red else Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 
-                // Discount Badge
                 if (discount != null) {
                     Box(
                         modifier = Modifier
@@ -648,12 +658,14 @@ fun ProductCard(
                 }
             }
             
-            Column(modifier = Modifier.padding(12.dp)) {
-                if (isCircleDeal) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 4.dp)) {
-                        Icon(Icons.Default.FlashOn, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text("Circle Deals", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
+            Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
+                Box(modifier = Modifier.fillMaxWidth().height(18.dp)) {
+                    if (isCircleDeal) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.FlashOn, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text("Circle Deals", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
+                        }
                     }
                 }
                 Text(
@@ -662,6 +674,8 @@ fun ProductCard(
                     fontWeight = FontWeight.Medium,
                     color = Color.Black,
                     maxLines = 2,
+                    minLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     lineHeight = 16.sp
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -691,23 +705,6 @@ fun ProductCard(
                     }
                 }
                 Text(text = "$soldCount Sold", fontSize = 11.sp, color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
-                
-                if (progress != null && leftText != null) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
-                        color = Color(0xFF4CAF50),
-                        trackColor = Color(0xFFE8F5E9)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = leftText,
-                        fontSize = 9.sp,
-                        color = Color(0xFF388E3C),
-                        fontWeight = FontWeight.Medium
-                    )
-                }
             }
         }
     }
@@ -732,23 +729,17 @@ fun CircleDealProductCard(
             .clip(RoundedCornerShape(8.dp))
             .clickable { onNavigateToProduct() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(8.dp)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-            ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color.White)) {
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = title,
-                    modifier = Modifier.fillMaxSize().padding(8.dp),
-                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
                     alignment = Alignment.Center
                 )
                 
-                // Discount Badge - Left
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -764,34 +755,22 @@ fun CircleDealProductCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                
-                // Favorite Icon
-                Icon(
-                    Icons.Outlined.FavoriteBorder, 
-                    contentDescription = "Wishlist", 
-                    tint = Color.Gray, 
-                    modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).size(16.dp)
-                )
             }
             
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.Bottom
-            ) {
+            Column(modifier = Modifier.padding(8.dp).fillMaxWidth()) {
                 Text(
                     text = title,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.Black,
                     maxLines = 2,
-                    lineHeight = 14.sp,
-                    overflow = TextOverflow.Ellipsis
+                    minLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 14.sp
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = price,
                         fontSize = 14.sp,
@@ -810,7 +789,6 @@ fun CircleDealProductCard(
                 
                 Spacer(modifier = Modifier.height(6.dp))
                 
-                // Progress Bar
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
