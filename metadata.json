@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Remix Remix Circle Bazar",
+  "description": "A modern multi-vendor shopping application with a clean white background, premium green branding, black typography and Material 3 Design.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
