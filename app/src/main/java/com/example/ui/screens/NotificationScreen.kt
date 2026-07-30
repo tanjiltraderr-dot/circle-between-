@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +23,10 @@ import com.example.data.NotificationRepository
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(onNavigateBack: () -> Unit) {
+    LaunchedEffect(Unit) {
+        NotificationRepository.markAllAsRead()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

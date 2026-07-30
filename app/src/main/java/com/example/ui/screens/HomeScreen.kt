@@ -171,12 +171,14 @@ fun HomeHeader(
         IconButton(onClick = onNavigateToNotification, modifier = Modifier.size(32.dp)) {
             BadgedBox(
                 badge = {
-                    Badge(
-                        containerColor = Color(0xFF388E3C), // Green
-                        contentColor = Color.White,
-                        modifier = Modifier.offset(x = (-4).dp, y = 4.dp).size(16.dp)
-                    ) {
-                        Text("3", color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                    if (unreadNotificationCount > 0) {
+                        Badge(
+                            containerColor = Color(0xFF388E3C), // Green
+                            contentColor = Color.White,
+                            modifier = Modifier.offset(x = (-4).dp, y = 4.dp).size(16.dp)
+                        ) {
+                            Text(unreadNotificationCount.toString(), color = Color.White, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             ) {
@@ -470,8 +472,7 @@ fun CategorySection(onNavigateToCategory: () -> Unit = {}) {
                                 softWrap = false,
                                 overflow = TextOverflow.Clip,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                lineHeight = 10.sp,
-                                modifier = Modifier.basicMarquee()
+                                lineHeight = 10.sp
                             )
                         }
                     }
