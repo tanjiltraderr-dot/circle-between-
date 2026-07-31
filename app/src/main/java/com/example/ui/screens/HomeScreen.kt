@@ -75,7 +75,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import com.example.R
+
+@Composable
+fun Modifier.cleanClickable(onClick: () -> Unit): Modifier {
+    return this.clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null,
+        onClick = onClick
+    )
+}
 
 @Composable
 fun AnimatedSearchPlaceholder() {
@@ -196,7 +207,7 @@ fun BannerOverlayTopBar(
                 .shadow(6.dp, RoundedCornerShape(24.dp))
                 .clip(RoundedCornerShape(24.dp))
                 .background(Color.White)
-                .clickable { onNavigateToSearch() },
+                .cleanClickable { onNavigateToSearch() },
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
@@ -489,7 +500,7 @@ fun CircleDealsSection(onNavigateToProduct: (String) -> Unit, onNavigateToCircle
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { onNavigateToCircleDeals(null) }
+                modifier = Modifier.cleanClickable { onNavigateToCircleDeals(null) }
             ) {
                 Text("Shop More", color = Color(0xFF388E3C), fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFF388E3C), modifier = Modifier.size(16.dp))
@@ -548,13 +559,13 @@ fun TimeBox(number: String, label: String) {
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
             .background(Color(0xFFFFD54F))
-            .width(42.dp)
-            .padding(horizontal = 4.dp, vertical = 6.dp),
+            .width(36.dp)
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = number, color = Color.Black, fontWeight = FontWeight.Black, fontSize = 16.sp, lineHeight = 16.sp)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(text = label, color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold, lineHeight = 10.sp)
+        Text(text = number, color = Color.Black, fontWeight = FontWeight.Black, fontSize = 13.sp, lineHeight = 13.sp)
+        Spacer(modifier = Modifier.height(1.dp))
+        Text(text = label, color = Color.Black, fontSize = 8.sp, fontWeight = FontWeight.Bold, lineHeight = 8.sp)
     }
 }
 
@@ -596,11 +607,11 @@ fun CategorySection(onNavigateToCategory: () -> Unit = {}) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable(enabled = name == "More") { onNavigateToCategory() }
+                                .cleanClickable { if (name == "More") onNavigateToCategory() }
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(42.dp)
+                                    .size(52.dp)
                                     .border(1.dp, Color.LightGray.copy(alpha = 0.3f), CircleShape)
                                     .shadow(elevation = 1.dp, shape = CircleShape, spotColor = Color.Red.copy(alpha = 0.05f))
                                     .clip(CircleShape)
@@ -611,20 +622,20 @@ fun CategorySection(onNavigateToCategory: () -> Unit = {}) {
                                     imageVector = icon,
                                     contentDescription = name.replace("\n", " "),
                                     tint = if (name == "More") Color.White else color,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(28.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = name,
-                                fontSize = 9.sp,
+                                fontSize = 10.sp,
                                 color = Color.Black,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1,
                                 softWrap = false,
                                 overflow = TextOverflow.Clip,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                lineHeight = 10.sp
+                                lineHeight = 11.sp
                             )
                         }
                     }
@@ -662,7 +673,7 @@ fun JustForYouSection(onNavigateToProduct: (String) -> Unit) {
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { }
+                modifier = Modifier.cleanClickable { }
             ) {
                 Text("View All", color = Color(0xFF388E3C), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFF388E3C), modifier = Modifier.size(16.dp))
@@ -756,7 +767,7 @@ fun ProductCard(
             .border(1.dp, Color.LightGray.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
             .shadow(elevation = 1.dp, shape = RoundedCornerShape(12.dp), spotColor = Color.Gray.copy(alpha = 0.1f))
             .clip(RoundedCornerShape(12.dp))
-            .clickable { onNavigateToProduct(id) },
+            .cleanClickable { onNavigateToProduct(id) },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -775,16 +786,23 @@ fun ProductCard(
                     alignment = Alignment.Center
                 )
                 
-                // Favorite Icon
-                IconButton(
-                    onClick = { isFavorite = !isFavorite },
-                    modifier = Modifier.align(Alignment.TopEnd).padding(4.dp).size(32.dp)
+                // Favorite Icon with background
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(28.dp)
+                        .shadow(2.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(if (isFavorite) Color(0xFFE53935) else Color.White.copy(alpha = 0.95f))
+                        .cleanClickable { isFavorite = !isFavorite },
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Wishlist", 
-                        tint = if (isFavorite) Color.Red else Color.Gray,
-                        modifier = Modifier.size(20.dp)
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Wishlist",
+                        tint = if (isFavorite) Color.White else Color(0xFF757575),
+                        modifier = Modifier.size(16.dp)
                     )
                 }
                 
@@ -805,18 +823,34 @@ fun ProductCard(
                         )
                     }
                 }
+                
+                if (isCircleDeal) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(6.dp)
+                            .background(Color(0xFFE53935), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FlashOn,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = "Circle Deals",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
             
             Column(modifier = Modifier.padding(12.dp).fillMaxWidth()) {
-                Box(modifier = Modifier.fillMaxWidth().height(18.dp)) {
-                    if (isCircleDeal) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.FlashOn, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text("Circle Deals", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
-                        }
-                    }
-                }
                 Text(
                     text = title,
                     fontSize = 13.sp,
@@ -871,12 +905,14 @@ fun CircleDealProductCard(
     onNavigateToProduct: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isFavorite by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
     Card(
         modifier = modifier
             .border(1.dp, Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
             .shadow(elevation = 1.dp, shape = RoundedCornerShape(8.dp), spotColor = Color.Gray.copy(alpha = 0.1f))
             .clip(RoundedCornerShape(8.dp))
-            .clickable { onNavigateToProduct() },
+            .cleanClickable { onNavigateToProduct() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -888,6 +924,26 @@ fun CircleDealProductCard(
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center
                 )
+                
+                // Favorite Icon with background
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(26.dp)
+                        .shadow(2.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(if (isFavorite) Color(0xFFE53935) else Color.White.copy(alpha = 0.95f))
+                        .cleanClickable { isFavorite = !isFavorite },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Wishlist",
+                        tint = if (isFavorite) Color.White else Color(0xFF757575),
+                        modifier = Modifier.size(15.dp)
+                    )
+                }
                 
                 Box(
                     modifier = Modifier

@@ -38,6 +38,7 @@ fun SearchScreen(onNavigateBack: () -> Unit, onNavigateToProduct: (String) -> Un
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .statusBarsPadding()
     ) {
         // Search Header
         Row(
