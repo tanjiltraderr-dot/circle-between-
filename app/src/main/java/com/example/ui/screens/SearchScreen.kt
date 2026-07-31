@@ -54,7 +54,7 @@ fun SearchScreen(onNavigateBack: () -> Unit, onNavigateToProduct: (String) -> Un
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.weight(1f).height(36.dp),
-                placeholder = { Text("Search products...") },
+                placeholder = { Text("Search in Circle Bazar...") },
                 shape = RoundedCornerShape(26.dp),
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {

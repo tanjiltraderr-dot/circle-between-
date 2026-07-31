@@ -1,5 +1,15 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
+
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,6 +78,48 @@ import androidx.compose.foundation.text.appendInlineContent
 import com.example.R
 
 @Composable
+fun AnimatedSearchPlaceholder() {
+    val placeholders = androidx.compose.runtime.remember {
+        listOf(
+            "Search in Circle Bazar",
+            "Search Apple iPhone 14 128GB",
+            "Search Men's Running Shoes",
+            "Search Haylou Smart Watch",
+            "Search Pro Wireless Earbuds",
+            "Search Women's Long Dress",
+            "Search Luxury Perfume",
+            "Search Women's Hand Bag",
+            "Search NAVIFORCE Watch"
+        )
+    }
+    var currentIndex by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0) }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(2500)
+            currentIndex = (currentIndex + 1) % placeholders.size
+        }
+    }
+
+    AnimatedContent(
+        targetState = placeholders[currentIndex],
+        transitionSpec = {
+            (slideInVertically { height -> height } + fadeIn(tween(300)))
+                .togetherWith(slideOutVertically { height -> -height } + fadeOut(tween(300)))
+        },
+        label = "SearchPlaceholderAnimation"
+    ) { text ->
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            color = Color.Gray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
 fun HomeScreen(
     modifier: Modifier = Modifier, 
     unreadNotificationCount: Int = 0,
@@ -78,20 +130,105 @@ fun HomeScreen(
     onNavigateToNotification: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
+    val isScrolled = scrollState.value > 40
     
-    Column(modifier = modifier.fillMaxSize().background(Color.White)) {
-        HomeHeader(
-            onNavigateToSearch = onNavigateToSearch,
-            onNavigateToNotification = onNavigateToNotification,
-            unreadNotificationCount = unreadNotificationCount
-        )
-        
-        Column(modifier = Modifier.verticalScroll(scrollState)) {
+    Box(modifier = modifier.fillMaxSize().background(Color.White)) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             HeroBanner()
             CircleDealsSection(onNavigateToProduct = onNavigateToProduct, onNavigateToCircleDeals = onNavigateToCircleDeals)
             CategorySection(onNavigateToCategory = onNavigateToCategory)
             JustForYouSection(onNavigateToProduct = onNavigateToProduct)
             Spacer(modifier = Modifier.height(24.dp))
+        }
+        
+        // Floating Top Bars:
+        // 1. When NOT scrolled (<= 40px): Search bar floating over top of Hero Banner
+        // 2. When scrolled (> 40px): Full solid white header with Logo + Search Bar + Notification slides in
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+        ) {
+            AnimatedVisibility(
+                visible = !isScrolled,
+                enter = fadeIn(tween(250)),
+                exit = fadeOut(tween(250))
+            ) {
+                BannerOverlayTopBar(
+                    onNavigateToSearch = onNavigateToSearch,
+                    onNavigateToNotification = onNavigateToNotification,
+                    unreadNotificationCount = unreadNotificationCount
+                )
+            }
+            
+            AnimatedVisibility(
+                visible = isScrolled,
+                enter = slideInVertically(tween(300)) { -it } + fadeIn(tween(300)),
+                exit = slideOutVertically(tween(300)) { -it } + fadeOut(tween(300))
+            ) {
+                HomeHeader(
+                    onNavigateToSearch = onNavigateToSearch,
+                    onNavigateToNotification = onNavigateToNotification,
+                    unreadNotificationCount = unreadNotificationCount
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BannerOverlayTopBar(
+    onNavigateToSearch: () -> Unit,
+    onNavigateToNotification: () -> Unit = {},
+    unreadNotificationCount: Int = 0
+) {
+    val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = topInset + 10.dp, bottom = 10.dp, start = 16.dp, end = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(42.dp)
+                .shadow(6.dp, RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color.White)
+                .clickable { onNavigateToSearch() },
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Search, 
+                    contentDescription = "Search", 
+                    tint = Color.Gray, 
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    AnimatedSearchPlaceholder()
+                }
+                Icon(
+                    Icons.Default.CameraAlt, 
+                    contentDescription = "Image Search", 
+                    tint = Color.Gray, 
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Icon(
+                    Icons.Default.Mic, 
+                    contentDescription = "Voice Search", 
+                    tint = Color.Gray, 
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
     }
 }
@@ -102,11 +239,13 @@ fun HomeHeader(
     onNavigateToNotification: () -> Unit = {},
     unreadNotificationCount: Int = 0
 ) {
-    var searchQuery by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+    val topInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .shadow(4.dp)
+            .background(Color.White)
+            .padding(top = topInset + 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Logo
@@ -118,7 +257,7 @@ fun HomeHeader(
                 imageVector = Icons.Filled.ShoppingBag,
                 contentDescription = "Logo",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(26.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
             Column {
@@ -126,55 +265,69 @@ fun HomeHeader(
                     text = "CIRCLE",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Black,
-                    fontSize = 12.sp,
-                    lineHeight = 12.sp
+                    fontSize = 11.sp,
+                    lineHeight = 11.sp
                 )
                 Text(
                     text = "BAZAR",
                     color = Color.Black,
                     fontWeight = FontWeight.Black,
-                    fontSize = 12.sp,
-                    lineHeight = 12.sp
+                    fontSize = 11.sp,
+                    lineHeight = 11.sp
                 )
             }
         }
-        
-        Box(modifier = Modifier.weight(1f).height(36.dp).clickable { onNavigateToSearch() }) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = {},
-                enabled = false,
-                modifier = Modifier.fillMaxSize(),
-                placeholder = { Text("Search for products, brands...", fontSize = 13.sp, color = Color.Gray, maxLines = 1) },
-                shape = RoundedCornerShape(24.dp),
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray, modifier = Modifier.size(20.dp)) },
-                trailingIcon = {
-                    Row(modifier = Modifier.padding(end = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.CameraAlt, contentDescription = "Image Search", tint = Color.Gray, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(Icons.Default.Mic, contentDescription = "Voice Search", tint = Color.Gray, modifier = Modifier.size(20.dp))
-                    }
-                },
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledBorderColor = Color.LightGray.copy(alpha = 0.5f),
-                    disabledContainerColor = Color.White,
-                    disabledTextColor = Color.Black,
-                    disabledPlaceholderColor = Color.Gray,
-                    disabledLeadingIconColor = Color.Gray,
-                    disabledTrailingIconColor = Color.Gray
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(38.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Color(0xFFF5F5F5))
+                .border(1.dp, Color.LightGray.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
+                .clickable { onNavigateToSearch() },
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = "Search",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(18.dp)
                 )
-            )
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    AnimatedSearchPlaceholder()
+                }
+                Icon(
+                    Icons.Default.CameraAlt,
+                    contentDescription = "Image Search",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(
+                    Icons.Default.Mic,
+                    contentDescription = "Voice Search",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
-        
-        Spacer(modifier = Modifier.width(8.dp))
-        
+
+        Spacer(modifier = Modifier.width(10.dp))
+
         IconButton(onClick = onNavigateToNotification, modifier = Modifier.size(32.dp)) {
             BadgedBox(
                 badge = {
                     if (unreadNotificationCount > 0) {
                         Badge(
-                            containerColor = Color(0xFF388E3C), // Green
+                            containerColor = Color(0xFF388E3C),
                             contentColor = Color.White,
                             modifier = Modifier.offset(x = (-4).dp, y = 4.dp).size(16.dp)
                         ) {
@@ -184,10 +337,10 @@ fun HomeHeader(
                 }
             ) {
                 Icon(
-                    Icons.Outlined.Notifications, 
-                    contentDescription = "Notifications", 
+                    Icons.Outlined.Notifications,
+                    contentDescription = "Notifications",
                     tint = Color.Black,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
         }
@@ -205,13 +358,10 @@ fun HeroBanner() {
             pagerState.animateScrollToPage(nextPage)
         }
     }
-
-    Box(modifier = Modifier.fillMaxWidth().padding(top = 0.dp, bottom = 4.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(2.2f)
+            modifier = Modifier.fillMaxSize()
         ) { page ->
             Box(
                 modifier = Modifier.fillMaxSize()
@@ -232,7 +382,7 @@ fun HeroBanner() {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
+                        .padding(start = 24.dp, end = 24.dp, bottom = 20.dp, top = 74.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
                     val subtitle = when(page) {
@@ -246,7 +396,6 @@ fun HeroBanner() {
                         1 -> "TRENDING NOW"
                         else -> "FLASH DEAL"
                     }
-
                     Text(
                         text = subtitle,
                         color = Color.White,

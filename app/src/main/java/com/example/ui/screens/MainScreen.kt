@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Category
@@ -46,6 +48,7 @@ fun MainScreen(
 
     Scaffold(
         containerColor = Color.White,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             NavigationBar(
                 containerColor = Color.White
@@ -73,7 +76,7 @@ fun MainScreen(
     ) { innerPadding ->
         when (selectedItem) {
             0 -> HomeScreen(
-                modifier = Modifier.padding(innerPadding), 
+                modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()), 
                 unreadNotificationCount = unreadNotificationCount,
                 onNavigateToSearch = onNavigateToSearch, 
                 onNavigateToProduct = onNavigateToProduct,
@@ -81,10 +84,10 @@ fun MainScreen(
                 onNavigateToCircleDeals = onNavigateToCircleDeals,
                 onNavigateToNotification = onNavigateToNotification
             )
-            1 -> CategoryScreen(modifier = Modifier.padding(innerPadding))
-            2 -> CartScreen(modifier = Modifier.padding(innerPadding))
-            3 -> OrdersScreen(modifier = Modifier.padding(innerPadding))
-            4 -> ProfileScreen(modifier = Modifier.padding(innerPadding))
+            1 -> CategoryScreen(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).statusBarsPadding())
+            2 -> CartScreen(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).statusBarsPadding())
+            3 -> OrdersScreen(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).statusBarsPadding())
+            4 -> ProfileScreen(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).statusBarsPadding())
         }
     }
 }
